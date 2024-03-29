@@ -9,6 +9,8 @@ import { Lecturer } from './lecturers/lecturers.entity';
 import { Lab } from './labs/labs.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CoursesModule } from './courses/courses.module';
+import { SubjectModule } from './subjects/subjects.module';
+import { Subject } from './subjects/subjects.entity';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { CoursesModule } from './courses/courses.module';
           username: configService.get('DB_USER'),
           password: configService.get('DB_PASS'),
           database: configService.get('DB_DATABASE'),
-          entities: [Lecturer, Lab],
+          entities: [Lecturer, Lab, Subject],
           synchronize: false,
         };
       },
@@ -35,10 +37,11 @@ import { CoursesModule } from './courses/courses.module';
       driver: ApolloDriver,
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
-      include: [LabsModule, LecturersModule],
+      include: [LabsModule, LecturersModule, SubjectModule],
       autoSchemaFile: true,
     }),
     CoursesModule,
+    SubjectModule,
   ],
 })
 export class AppModule {}
