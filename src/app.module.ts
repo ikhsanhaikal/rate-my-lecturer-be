@@ -8,6 +8,7 @@ import { LabsModule } from './labs/labs.module';
 import { Lecturer } from './lecturers/lecturers.entity';
 import { Lab } from './labs/labs.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       include: [LabsModule, LecturersModule],
       autoSchemaFile: true,
     }),
+    CoursesModule,
   ],
 })
 export class AppModule {}
