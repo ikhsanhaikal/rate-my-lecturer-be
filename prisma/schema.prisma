@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Lecturer {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  name        String
+  lab         Lab      @relation(fields: [labId], references: [id])
+  labId       Int
+  description String
+  gender      Gender
+  courses     Class[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@map("lecturers")
+}
+
+model Lab {
+  id          Int        @id @default(autoincrement())
+  name        String
+  code        LabCode    @unique
+  description String?
+  lecturers   Lecturer[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt()
+
+  @@map("labs")
+}
+
+enum LabCode {
+  AJK
+  RPL
+  KBJ
+  KCV
+  MCI
+  AP
+  GIGa
+  DTK
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("users")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model Subject {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  lecturers   Class[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@map("subjects")
+}
+
+model Trait {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  feedbacks Tag[]
+
+  @@map("traits")
+}
+
+model Class {
+  lecturer   Lecturer @relation(fields: [lecturerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  lecturerId Int
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subjectId  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  reviews    Review[]
+  semester   String?
+  year       Int?
+
+  id Int @id @default(autoincrement())
+
+  @@map("clasess")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  traitId   Int
+  reviewId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  trait     Trait    @relation(fields: [traitId], references: [id])
+  review    Review   @relation(fields: [reviewId], references: [id])
+
+  @@map("tags")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  comment    String
+  rating     Float
+  tags       Tag[]
+  class      Class?   @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  classId    Int?
+  reviewer   User     @relation(fields: [reviewerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reviewerId Int
+  createdAt  DateTime @default(now())
+
+  @@map("reviews")
+}
