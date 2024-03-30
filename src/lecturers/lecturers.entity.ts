@@ -1,5 +1,12 @@
+import { Course } from 'src/courses/courses.entity';
 import { Lab } from 'src/labs/labs.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'lecturers' })
 export class Lecturer {
@@ -14,4 +21,7 @@ export class Lecturer {
 
   @ManyToOne(() => Lab, (lab) => lab.members)
   lab: Lab;
+
+  @OneToMany(() => Course, (course) => course.lecturer)
+  public subjectAndLecturer: Course[];
 }
