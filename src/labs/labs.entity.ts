@@ -1,5 +1,11 @@
 import { Lecturer } from 'src/lecturers/lecturers.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'labs' })
 export class Lab {
@@ -9,8 +15,9 @@ export class Lab {
   name: string;
   @Column()
   code: string;
-  @Column()
-  createdAt: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
   //@Column()
   //updatedAt: string;
 
