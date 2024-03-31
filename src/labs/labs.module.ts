@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { LabsService } from './labs.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Lab } from './labs.entity';
 import { LabsResolver } from './labs.resolver';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lab])],
+  imports: [PrismaModule],
   providers: [LabsService, LabsResolver],
   exports: [LabsService],
 })

@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Lab } from './labs.entity';
-import { Repository } from 'typeorm';
+import { Lab } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class LabsService {
-  constructor(
-    @InjectRepository(Lab)
-    private labRepository: Repository<Lab>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async findOne(id: number): Promise<Lab | null> {
-    return this.labRepository.findOne({ where: { id: id } });
+    return this.prisma.lab.findFirst({ where: { id: id } });
   }
 }
