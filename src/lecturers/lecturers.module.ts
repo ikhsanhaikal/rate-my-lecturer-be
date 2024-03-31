@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Lecturer } from './lecturers.entity';
 import { LecturersService } from './lecturers.service';
 import { LecturersResolver } from './lecturers.resolver';
 import { LabsModule } from 'src/labs/labs.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lecturer]), LabsModule],
+  imports: [LabsModule, PrismaModule],
   providers: [LecturersService, LecturersResolver],
   exports: [LecturersService],
 })

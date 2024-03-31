@@ -1,25 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Lecturer } from './lecturers.entity';
-import { Repository } from 'typeorm';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Lecturer, Prisma } from '@prisma/client';
 
 @Injectable()
 export class LecturersService {
-  constructor(
-    @InjectRepository(Lecturer)
-    private lecturersRepository: Repository<Lecturer>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async findOne(id: number): Promise<Lecturer | null> {
-    console.log(`id given ${id}`);
-    try {
-      const lecturer = await this.lecturersRepository.findOne({
-        where: { id: id },
-      });
-      return lecturer;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+  async lecturer(id: number): Promise<Lecturer | null> {
+    return this.prisma.lecturer.findFirst({ where: { id: id } });
+  }
+  async lecturers(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.LecturerWhereUniqueInput;
+    where?: Prisma.LecturerWhereInput;
+    orderBy?: Prisma.LecturerOrderByWithRelationInput;
+  }): Promise<Lecturer[]> {
+    const { skip, take, cursor, where, orderBy } = params;
+
+    return this.prisma.lecturer.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
   }
 }
