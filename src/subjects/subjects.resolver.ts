@@ -1,17 +1,13 @@
 import { Query, Resolver } from '@nestjs/graphql';
-import { Subject } from './subjects.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { SubjectsSchema } from './subjects.schema';
+import { Subject } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Resolver()
 export class SubjectsResolver {
-  constructor(
-    @InjectRepository(Subject)
-    private subjectRepository: Repository<Subject>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
   @Query(() => [SubjectsSchema])
   async subjects(): Promise<Subject[]> {
-    return this.subjectRepository.find({});
+    return this.prisma.subject.findMany({});
   }
 }
