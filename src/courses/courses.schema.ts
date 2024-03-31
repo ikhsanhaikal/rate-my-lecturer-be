@@ -1,8 +1,7 @@
 import { Field, GraphQLTimestamp, ObjectType } from '@nestjs/graphql';
+import { Lecturer, Subject } from '@prisma/client';
 import { GraphQLInt, GraphQLString } from 'graphql';
-import { Lecturer } from 'src/lecturers/lecturers.entity';
 import { LecturerSchema } from 'src/lecturers/lecturers.schema';
-import { Subject } from 'src/subjects/subjects.entity';
 import { SubjectsSchema } from 'src/subjects/subjects.schema';
 
 @ObjectType('class', {})
