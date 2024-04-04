@@ -9,10 +9,10 @@ export class CourseSchema {
   @Field(() => GraphQLInt)
   id: number;
 
-  @Field(() => GraphQLString)
+  @Field(() => GraphQLString, { nullable: true })
   semester: string;
 
-  @Field(() => GraphQLTimestamp)
+  @Field(() => GraphQLTimestamp, { nullable: true })
   year: Date;
 
   @Field(() => GraphQLTimestamp)
