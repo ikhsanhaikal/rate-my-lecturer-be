@@ -1,11 +1,12 @@
 import { Gender, Lab, LabCode, PrismaClient, Subject } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { labs, subjects } from './dummy-data';
+import { labs, subjects, traits } from './dummy-data';
 const prisma = new PrismaClient();
 
 async function main() {
-  await seedSubjects();
-  await lecturers();
+  await seedUsers();
+  await seedTraits();
+  await seedLecturers();
 }
 main()
   .then(async () => {
@@ -16,6 +17,18 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+async function seedTraits() {
+  const foo = traits.map(async (trait) => {
+    return prisma.trait.upsert({
+      where: { name: trait },
+      update: {},
+      create: {
+        name: trait,
+      },
+    });
+  });
+  return await Promise.all(foo);
+}
 function seedSubjects() {
   return subjects.map(async (subject) => {
     return prisma.subject.upsert({
@@ -39,12 +52,34 @@ function seedLabs() {
     });
   });
 }
-async function lecturers() {
+async function seedUsers() {
+  const req = new Array(10).fill(0).map(async () => {
+    const sex = faker.person.sex();
+    const firstName = faker.person.firstName(sex as 'female' | 'male');
+    const lastName = faker.person.lastName(sex as 'female' | 'male');
+    const email = faker.internet.email({
+      firstName: firstName,
+      lastName: lastName,
+    });
+    return prisma.user.upsert({
+      where: { email: email },
+      update: {},
+      create: {
+        email: email,
+        username: `${firstName}${lastName}`,
+        password: '',
+      },
+    });
+  });
+  await Promise.all(req);
+}
+async function seedLecturers() {
   const resultLabs: Array<Lab> = await Promise.all(seedLabs());
   const resultSubjects: Array<Subject> = await Promise.all(seedSubjects());
   const req = new Array(30).fill(0).map(async () => {
-    const firstName = faker.person.firstName();
-    const lastName = faker.person.lastName();
+    const sex = faker.person.sex();
+    const firstName = faker.person.firstName(sex as 'female' | 'male');
+    const lastName = faker.person.lastName(sex as 'female' | 'male');
     const email = faker.internet.email({
       firstName: firstName,
       lastName: lastName,
@@ -55,7 +90,7 @@ async function lecturers() {
       create: {
         email: email,
         name: `${firstName} ${lastName}`,
-        gender: faker.person.sex().toUpperCase() as Gender,
+        gender: sex.toUpperCase() as Gender,
         description: faker.lorem.sentence(),
         lab: {
           connect: resultLabs[faker.number.int({ max: resultLabs.length - 1 })],

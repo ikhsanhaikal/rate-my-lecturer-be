@@ -25,3 +25,14 @@ export const labs = [
   { name: 'manajemen cerdas informasi', code: 'MCI' },
   //{ name: 'pemodelan dan komputasi terapan', code: 'PKT' },
 ];
+
+export const traits = [
+  'auto ngulang',
+  'auto lulus',
+  'killer',
+  'santuy',
+  'skip-an (jarang kelas)',
+  'rajin',
+  'tegas',
+  'resek',
+];
