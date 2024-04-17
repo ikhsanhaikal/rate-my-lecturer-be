@@ -67,7 +67,6 @@ async function seedUsers() {
       create: {
         email: email,
         username: `${firstName}${lastName}`,
-        password: '',
       },
     });
   });
