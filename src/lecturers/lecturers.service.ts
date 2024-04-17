@@ -8,6 +8,7 @@ import {
   Subject,
   Trait,
 } from '@prisma/client';
+import { SearchResult } from './lecturers.resolver';
 
 @Injectable()
 export class LecturersService {
@@ -40,6 +41,37 @@ export class LecturersService {
     console.log(`courses: `, result);
     return result;
   }
+
+  async searchByName(
+    limit: number,
+    cursorId: number,
+    name: string,
+    count: boolean,
+    skip?: number,
+  ): Promise<SearchResult> {
+    const data = await this.prisma.lecturer.findMany({
+      take: limit,
+      skip: skip,
+      cursor: cursorId
+        ? {
+            id: cursorId,
+          }
+        : undefined,
+      where: {
+        name: { contains: name },
+      },
+    });
+    const total = count
+      ? await this.prisma.lecturer.count({
+          where: {
+            name: { contains: name },
+          },
+        })
+      : -1;
+
+    return { data, total };
+  }
+
   async subjects(id: number): Promise<Subject[]> {
     const result = await this.prisma.class.findMany({
       distinct: ['subjectId'],
