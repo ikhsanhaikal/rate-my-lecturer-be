@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Class as Course, Review } from '@prisma/client';
+import { Prisma, Class as Course, Review, Trait } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReviewInput } from './reviews.resolver';
 
@@ -23,7 +23,7 @@ export class ReviewService {
       orderBy,
     });
   }
-  async addReview(input: ReviewInput) {
+  async addReview(input: ReviewInput, currentUser: number) {
     const foo = input.tags.map((tag) => {
       const tmp = { traitId: tag } as Prisma.TagCreateManyReviewInput;
       return tmp;
@@ -43,7 +43,7 @@ export class ReviewService {
           },
         },
         reviewer: {
-          connect: { id: input.reviewer },
+          connect: { id: currentUser },
         },
       },
     });
@@ -57,5 +57,19 @@ export class ReviewService {
       where: { id: reviewId },
     });
     return result.class;
+  }
+
+  async tags(reviewId: number): Promise<Trait[]> {
+    const result = await this.prisma.review.findFirst({
+      select: {
+        tags: {
+          select: {
+            trait: true,
+          },
+        },
+      },
+      where: { id: reviewId },
+    });
+    return result.tags.map((tag) => tag.trait);
   }
 }

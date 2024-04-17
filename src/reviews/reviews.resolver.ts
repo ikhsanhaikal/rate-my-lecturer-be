@@ -1,5 +1,6 @@
 import {
   Args,
+  Context,
   Field,
   InputType,
   Mutation,
@@ -8,26 +9,33 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import { GraphQLInt, GraphQLString } from 'graphql';
+import { GraphQLFloat, GraphQLInt, GraphQLString } from 'graphql';
 import { ReviewService } from './reviews.service';
 import { ReviewSchema } from './reviews.schema';
-import { Class as Course, Review, User } from '@prisma/client';
+import { Class as Course, Review, Trait, User } from '@prisma/client';
 import { CourseSchema } from 'src/courses/courses.schema';
 import { UserSchema } from 'src/users/users.schema';
 import { UserService } from 'src/users/users.service';
+import { Request } from 'express';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { TraitSchema } from 'src/traits/traits.schema';
 @InputType()
 export class ReviewInput {
   @Field(() => GraphQLString)
   comment: string;
-  @Field(() => GraphQLInt)
+  @Field(() => GraphQLFloat)
   rating: number;
   @Field(() => [GraphQLInt])
   tags: number[];
   @Field(() => GraphQLInt)
   course: number;
-  @Field(() => GraphQLInt)
-  reviewer: number;
 }
+
+interface MyContext {
+  req: Request;
+}
+
 @Resolver(() => ReviewSchema)
 export class ReviewResolver {
   constructor(
@@ -53,12 +61,17 @@ export class ReviewResolver {
   }
 
   @Mutation(() => ReviewSchema)
+  @UseGuards(new AuthGuard())
   async addReview(
     @Args('reviewInput', { type: () => ReviewInput }) input: ReviewInput,
+    @Context() ctx: MyContext,
   ): Promise<Review> {
     console.log('mutation addReview was called');
     console.log(`reviewInput: `, input);
-    return this.reviewService.addReview(input);
+    console.log('session: ', ctx.req.session);
+    const user = await this.userService.findOne(ctx.req.session.user.userId);
+    console.log(user);
+    return this.reviewService.addReview(input, user.id);
   }
 
   @ResolveField(() => CourseSchema, { name: 'course' })
@@ -71,5 +84,11 @@ export class ReviewResolver {
   async reviewer(@Parent() parent: Review): Promise<User> {
     console.log(`ResolveField reviewer parent: ReviewSchema`, parent);
     return this.userService.findOne(parent.reviewerId);
+  }
+
+  @ResolveField(() => TraitSchema, { name: 'tags' })
+  async tags(@Parent() parent: Review): Promise<Trait[]> {
+    console.log(`ResolveField course parent: ReviewSchema`, parent);
+    return this.reviewService.tags(parent.id);
   }
 }

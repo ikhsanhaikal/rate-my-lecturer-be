@@ -3,6 +3,7 @@ import {
   Field,
   InputType,
   Int,
+  ObjectType,
   Parent,
   Query,
   ResolveField,
@@ -11,13 +12,19 @@ import {
 import { LecturerSchema } from './lecturers.schema';
 import { LabsSchema } from 'src/labs/labs.schema';
 import { LabsService } from 'src/labs/labs.service';
-import { GraphQLFloat, GraphQLInt, GraphQLString } from 'graphql';
+import {
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLInt,
+  GraphQLString,
+} from 'graphql';
 import { LecturersService } from './lecturers.service';
 import { Gender, Lecturer } from '@prisma/client';
 import { SubjectsSchema } from 'src/subjects/subjects.schema';
 import { TraitSchema } from 'src/traits/traits.schema';
 import { CourseSchema } from 'src/courses/courses.schema';
 import { ReviewSchema } from 'src/reviews/reviews.schema';
+
 @InputType()
 class FilterType {
   @Field(() => [GraphQLInt], { nullable: true })
@@ -27,6 +34,15 @@ class FilterType {
   @Field(() => GraphQLString, { nullable: true })
   gender: string;
 }
+
+@ObjectType('searchresult')
+export class SearchResult {
+  @Field(() => [LecturerSchema])
+  data: Lecturer[];
+  @Field(() => GraphQLInt)
+  total: number;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 @Resolver((of) => LecturerSchema)
 export class LecturersResolver {
@@ -37,9 +53,10 @@ export class LecturersResolver {
 
   @Query(() => [LecturerSchema])
   async lecturers(
-    @Args('cursorId', { type: () => Int }) cursorId: number,
+    @Args('cursorId', { type: () => Int, nullable: true }) cursorId: number,
     @Args('limit', { type: () => Int }) limit: number,
-    @Args('filter', { type: () => FilterType }) filter: FilterType,
+    @Args('filter', { type: () => FilterType })
+    filter: FilterType,
     //@Args('subjects', { type: () => [Int], nullable: true }) subjects: number[],
     //@Args('characters', { type: () => [Int], nullable: true })
     //characters: number[],
@@ -72,12 +89,13 @@ export class LecturersResolver {
         };
       });
     }
+
     const spreadSubIfExist = subjects !== null ? foo1() : [];
     const spreadCharIfExist = characters !== null ? foo2() : [];
     return this.lecturersService.lecturers({
-      skip: cursorId > 0 ? 1 : undefined,
+      skip: cursorId ? 1 : undefined,
       take: limit ?? 12,
-      cursor: cursorId !== 0 ? { id: cursorId } : undefined,
+      cursor: cursorId ? { id: cursorId } : undefined,
       where: {
         gender: { equals: (gender as Gender) ?? undefined },
         AND:
@@ -99,6 +117,28 @@ export class LecturersResolver {
     console.log('findOne():', result);
     return result;
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @Query((returns) => SearchResult)
+  async search(
+    @Args('limit', { type: () => GraphQLInt }) limit: number,
+    @Args('name', { type: () => GraphQLString }) name: string,
+    @Args('cursor', { type: () => GraphQLInt, nullable: true }) cursor: number,
+    @Args('count', { type: () => GraphQLBoolean, nullable: true })
+    count: boolean,
+    @Args('skip', { type: () => GraphQLInt, nullable: true }) skip: number,
+  ): Promise<SearchResult> {
+    const result = await this.lecturersService.searchByName(
+      limit,
+      cursor,
+      name,
+      count,
+      skip,
+    );
+
+    return result;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   @ResolveField('lab', (returns) => LabsSchema)
   async getLabByLecturer(@Parent() parent: Lecturer) {
