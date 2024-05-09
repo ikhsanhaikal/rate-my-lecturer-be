@@ -24,6 +24,10 @@ declare module 'express-session' {
     user: UserSession;
   }
 }
+const CLIENT_BASE_URL =
+  process.env.NODE_ENV === 'development'
+    ? process.env.REACT_APP_DEV_API
+    : process.env.REACT_APP_PROD_API;
 
 @Controller()
 export class AuthController {
@@ -54,7 +58,7 @@ export class AuthController {
     try {
       const getTokenResponse = await client.getToken({
         code: request.body.code,
-        redirect_uri: 'https://127.0.0.1:3000',
+        redirect_uri: CLIENT_BASE_URL,
       });
 
       client.setCredentials(getTokenResponse.tokens);

@@ -17,13 +17,16 @@ model Lecturer {
   id          Int      @id @default(autoincrement())
   email       String   @unique
   name        String
-  lab         Lab      @relation(fields: [labId], references: [id])
-  labId       Int
+  lab         Lab?     @relation(fields: [labId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  labId       Int?
   description String
   gender      Gender
   courses     Class[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+
+  editor   Editor? @relation(fields: [editorId], references: [id])
+  editorId Int?
 
   @@map("lecturers")
 }
@@ -31,11 +34,14 @@ model Lecturer {
 model Lab {
   id          Int        @id @default(autoincrement())
   name        String
-  code        LabCode    @unique
+  code        String     @unique
   description String?
   lecturers   Lecturer[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @default(now()) @updatedAt()
+
+  editor   Editor? @relation(fields: [editorId], references: [id])
+  editorId Int?
 
   @@map("labs")
 }
@@ -49,6 +55,19 @@ enum LabCode {
   AP
   GIGa
   DTK
+}
+
+model Editor {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  username  String
+  createdAt DateTime   @default(now())
+  Subject   Subject[]
+  Lab       Lab[]
+  Lecturer  Lecturer[]
+  Class     Class[]
+
+  @@map("editors")
 }
 
 model User {
@@ -75,6 +94,9 @@ model Subject {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 
+  editor   Editor? @relation(fields: [editorId], references: [id])
+  editorId Int?
+
   @@map("subjects")
 }
 
@@ -90,29 +112,32 @@ model Trait {
 }
 
 model Class {
-  lecturer   Lecturer @relation(fields: [lecturerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  lecturerId Int
-  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  subjectId  Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  lecturer   Lecturer? @relation(fields: [lecturerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  lecturerId Int?
+  subject    Subject?  @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subjectId  Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
   reviews    Review[]
-  semester   String?
-  year       Int?
+  semester   String
+  year       DateTime
 
   id Int @id @default(autoincrement())
 
-  @@map("clasess")
+  editor   Editor? @relation(fields: [editorId], references: [id])
+  editorId Int?
+
+  @@map("classes")
 }
 
 model Tag {
   id        Int      @id @default(autoincrement())
-  traitId   Int
-  reviewId  Int
+  traitId   Int?
+  reviewId  Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-  trait     Trait    @relation(fields: [traitId], references: [id])
-  review    Review   @relation(fields: [reviewId], references: [id])
+  trait     Trait?   @relation(fields: [traitId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  review    Review?  @relation(fields: [reviewId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@map("tags")
 }
@@ -122,10 +147,10 @@ model Review {
   comment    String
   rating     Float
   tags       Tag[]
-  class      Class?   @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  class      Class?   @relation(fields: [classId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   classId    Int?
-  reviewer   User     @relation(fields: [reviewerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  reviewerId Int
+  reviewer   User?    @relation(fields: [reviewerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  reviewerId Int?
   createdAt  DateTime @default(now())
 
   @@map("reviews")

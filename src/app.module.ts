@@ -12,10 +12,15 @@ import { TraitsModule } from './traits/traits.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({}),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'react_client'),
+    }),
     LabsModule,
     LecturersModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
